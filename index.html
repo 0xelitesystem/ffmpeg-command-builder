@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ffmpeg Command Builder</title>
+<meta name="description" content="Task-first ffmpeg helper. Pick what you want to do (compress, convert, trim, make a GIF, extract audio) and get the exact command with a plain-language explanation of every flag. Runs entirely in your browser.">
+<link rel="canonical" href="https://0xelitesystem.github.io/ffmpeg-command-builder/">
+<meta property="og:title" content="ffmpeg Command Builder">
+<meta property="og:description" content="Pick a task, get the exact ffmpeg command with every flag explained. 32 everyday tasks, all client-side, works offline.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://0xelitesystem.github.io/ffmpeg-command-builder/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ffmpeg Command Builder",
+  "description": "Task-first ffmpeg helper. Pick what you want to do and get the exact command with a plain-language explanation of every flag. All client-side, no external dependencies.",
+  "url": "https://0xelitesystem.github.io/ffmpeg-command-builder/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "0xelitesystem", "url": "https://elitesystem.ai" }
+}
+</script>
+<style>
+:root {
+  --bg: #fafaf6;
+  --surface: #ffffff;
+  --ink: #0a1d1e;
+  --ink-soft: #2c4a4c;
+  --rule: #c8d4d3;
+  --teal: #0f5c60;
+  --teal-deep: #0a4548;
+  --gold: #b07d2a;
+  --gold-deep: #8a611f;
+  --ok: #1a5c2e;
+  --warn: #8a5a00;
+  --err: #8b1a1a;
+  --code-bg: #f0ebe1;
+}
+[data-theme="dark"] {
+  --bg: #0c1c1d;
+  --surface: #14292a;
+  --ink: #e8ebe6;
+  --ink-soft: #b0c0bd;
+  --rule: #2a4042;
+  --teal: #4ab4ba;
+  --teal-deep: #6dc8ce;
+  --gold: #d4a155;
+  --gold-deep: #e6b876;
+  --ok: #6dd380;
+  --warn: #d4a155;
+  --err: #e88080;
+  --code-bg: #0a1718;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  line-height: 1.55;
+}
+.wrap { max-width: 1100px; margin: 0 auto; }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid var(--teal);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--teal);
+}
+.tag {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.75rem;
+  color: var(--gold-deep);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+[data-theme="dark"] .tag { color: var(--gold); }
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-soft);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.theme-btn:hover { border-color: var(--teal); color: var(--teal); }
+.lede {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.25rem;
+  max-width: 68ch;
+}
+.scope-note {
+  font-size: 0.78rem;
+  color: var(--gold-deep);
+  margin-bottom: 1.5rem;
+  max-width: 72ch;
+}
+[data-theme="dark"] .scope-note { color: var(--gold); }
+.controls {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border-radius: 3px;
+}
+label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+input[type="search"], input[type="text"], input[type="number"], select {
+  width: 100%;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 0.55rem 0.7rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+input:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
+.chip {
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+  border-radius: 2px;
+}
+.chip:hover { border-color: var(--teal); color: var(--teal); }
+.chip[aria-pressed="true"] {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--surface);
+  font-weight: 600;
+}
+[data-theme="dark"] .chip[aria-pressed="true"] { color: var(--bg); }
+.layout { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; }
+.task-list {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 0.85rem;
+  max-height: 72vh;
+  overflow-y: auto;
+}
+.cat-head {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gold-deep);
+  margin: 0.85rem 0 0.35rem;
+}
+[data-theme="dark"] .cat-head { color: var(--gold); }
+.cat-head:first-child { margin-top: 0; }
+.task-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 2px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 2px;
+  line-height: 1.35;
+}
+.task-btn:hover { border-color: var(--teal); color: var(--teal); }
+.task-btn[aria-pressed="true"] {
+  background: var(--teal);
+  color: var(--surface);
+  border-color: var(--teal);
+  font-weight: 600;
+}
+[data-theme="dark"] .task-btn[aria-pressed="true"] { color: var(--bg); }
+.no-match { font-size: 0.85rem; color: var(--ink-soft); font-style: italic; padding: 0.5rem; }
+.detail {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1.5rem;
+  min-height: 300px;
+}
+.detail h2 { font-size: 1.25rem; color: var(--teal); font-weight: 600; margin-bottom: 0.5rem; }
+.detail .desc { font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 1.1rem; max-width: 65ch; }
+.fields { display: flex; flex-wrap: wrap; gap: 0.9rem 1.1rem; margin-bottom: 1.1rem; }
+.field { min-width: 150px; flex: 0 1 auto; }
+.field input[type="text"] { min-width: 190px; }
+.field input[type="number"] { width: 110px; }
+.field select { width: auto; min-width: 160px; }
+.field input[type="range"] { width: 220px; accent-color: var(--teal); }
+.range-val {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.8rem;
+  color: var(--ink);
+  margin-left: 0.5rem;
+}
+.range-desc { font-size: 0.78rem; color: var(--ink-soft); font-style: italic; margin-top: 0.25rem; max-width: 40ch; }
+.cmd-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.cmd-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+button.copy-btn {
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--teal);
+  background: var(--teal);
+  color: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 2px;
+}
+[data-theme="dark"] button.copy-btn { color: var(--bg); }
+button.copy-btn:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
+pre {
+  background: var(--code-bg);
+  padding: 0.9rem;
+  border-radius: 2px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+  margin-bottom: 1.1rem;
+}
+.ph-hint { font-size: 0.76rem; color: var(--ink-soft); font-style: italic; margin: -0.6rem 0 1.1rem; }
+.flags-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 0.5rem; }
+.flags { margin-bottom: 1.1rem; }
+.flag-row { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; font-size: 0.85rem; margin-bottom: 0.35rem; }
+.flag-key { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.8rem; color: var(--teal); white-space: nowrap; }
+.flag-val { color: var(--ink-soft); }
+.warn-box {
+  font-size: 0.85rem;
+  color: var(--warn);
+  padding: 0.6rem 0.75rem;
+  background: var(--code-bg);
+  border-left: 3px solid var(--warn);
+  border-radius: 2px;
+  margin-bottom: 0.6rem;
+}
+.note-box {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  padding: 0.6rem 0.75rem;
+  background: var(--code-bg);
+  border-left: 3px solid var(--teal);
+  border-radius: 2px;
+  margin-bottom: 0.6rem;
+  white-space: pre-wrap;
+  font-style: normal;
+}
+.note-box code, .warn-box code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.8rem; }
+.tip {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-top: 1.1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--rule);
+}
+.empty-state { font-size: 0.9rem; color: var(--ink-soft); font-style: italic; padding: 2rem 0; text-align: center; }
+footer {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+footer a { color: var(--teal); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+@media (max-width: 800px) {
+  body { padding: 1rem 0.75rem; }
+  h1 { font-size: 1.4rem; }
+  .layout { grid-template-columns: 1fr; }
+  .task-list { max-height: 300px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>ffmpeg Command Builder</h1>
+    <div class="tag">Pick a task, get the command</div>
+  </div>
+  <button class="theme-btn" id="theme-toggle" type="button">Dark</button>
+</header>
+
+<p class="lede">Pick what you want to do. Get the exact ffmpeg command, with every flag explained in plain language and warnings where they matter. Fill in the optional inputs to substitute your own file names and values live.</p>
+<p class="scope-note">Scope, honestly stated: this covers everyday tasks, it is not an ffmpeg reference. Commands target recent ffmpeg versions (5.x and newer). Anything in angle brackets is a placeholder, replace it with your own file name.</p>
+
+<div class="controls">
+  <label for="search">Search tasks</label>
+  <input type="search" id="search" placeholder="e.g. gif, trim, compress, extract audio..." autocomplete="off">
+  <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+</div>
+
+<div class="layout">
+  <nav class="task-list" id="task-list" aria-label="Task list"></nav>
+  <div class="detail" id="detail" aria-live="polite">
+    <div class="empty-state">Select a task from the list, or search for what you want to do.</div>
+  </div>
+</div>
+
+<footer>
+  <div>ffmpeg Command Builder. Open source, MIT licensed. <a href="https://github.com/0xelitesystem/ffmpeg-command-builder" target="_blank" rel="noopener">View source</a>.</div>
+  <div>All client-side, works offline. Built by <a href="https://elitesystem.ai" target="_blank" rel="noopener">elitesystem.ai</a>.</div>
+</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+// Theme toggle
+const themeBtn = $("theme-toggle");
+function setTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  themeBtn.textContent = t === "dark" ? "Light" : "Dark";
+}
+themeBtn.addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme") || "light";
+  setTheme(cur === "dark" ? "light" : "dark");
+});
+setTheme("light");
+
+// Helpers
+function q(s) { return /\s/.test(s) ? '"' + s + '"' : s; }
+function val(state, key, ph) {
+  const raw = (state[key] || "").trim();
+  return raw ? q(raw) : ph;
+}
+function num(state, key, def) {
+  const raw = (state[key] || "").trim();
+  const n = parseFloat(raw);
+  return isFinite(n) ? n : def;
+}
+function parseTime(s) {
+  s = (s || "").trim();
+  if (!s) return null;
+  if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+  const m = s.match(/^(?:(\d+):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/);
+  if (!m) return null;
+  const h = m[1] ? parseInt(m[1], 10) : 0;
+  return h * 3600 + parseInt(m[2], 10) * 60 + parseFloat(m[3]);
+}
+function fmtTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  const sStr = (s < 10 ? "0" : "") + (Number.isInteger(s) ? s : s.toFixed(3).replace(/0+$/, "").replace(/\.$/, ""));
+  return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + sStr;
+}
+function atempoChain(speed) {
+  // atempo accepts 0.5 to 100 per instance on recent ffmpeg; chain for values below 0.5
+  if (speed >= 0.5) return "atempo=" + speed;
+  const parts = [];
+  let s = speed;
+  while (s < 0.5) { parts.push("atempo=0.5"); s = s / 0.5; }
+  parts.push("atempo=" + parseFloat(s.toFixed(4)));
+  return parts.join(",");
+}
+function crfDesc(c) {
+  if (c <= 19) return "Near lossless. Very large file. Overkill for most uploads.";
+  if (c <= 21) return "Visually excellent. Large file. Good for archiving.";
+  if (c <= 24) return "The sweet spot for most videos. Good quality, sane size.";
+  if (c <= 26) return "Noticeably smaller. Minor softness on fine detail.";
+  return "Small file. Visible artifacts in motion and gradients.";
+}
+
+// Reusable warnings
+const W_REENC = "This re-encodes the video, so it takes time and loses a little quality versus the original. That is normal and usually invisible at the suggested settings.";
+const W_OVERWRITE = "ffmpeg asks before overwriting an existing output file. Adding -y right after ffmpeg overwrites without asking; use it deliberately.";
+
+const CATS = ["Compress and convert", "Audio", "Trim and cut", "GIF and images", "Subtitles", "Info and misc"];
+
+const TASKS = [
+// ---------- Compress and convert ----------
+{
+  id: "compress-mp4", cat: 0,
+  title: "Compress an MP4 (quality slider)",
+  kw: "shrink smaller file size reduce quality crf h264 x264",
+  desc: "Re-encode with H.264 using CRF (constant rate factor) quality control. Lower CRF means better quality and a bigger file. 18 is close to lossless, 23 is the default, 28 is small with visible compromises. Move the slider and watch the command update.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "crf", label: "Quality (CRF)", type: "range", min: 18, max: 28, def: 23, desc: crfDesc },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -c:v libx264 -crf ${num(s,"crf",23)} -preset medium -c:a aac -b:a 128k ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-i", "The input file."],
+    ["-c:v libx264", "Encode video with the H.264 encoder, the most compatible choice."],
+    ["-crf N", "Quality target from 0 (lossless) to 51 (worst). 18 to 28 is the practical range: 18 looks identical to the source but files stay large, 23 is a balanced default, 28 trades visible quality for a much smaller file."],
+    ["-preset medium", "Speed versus compression tradeoff. Slower presets (slow, veryslow) squeeze the same quality into fewer bytes but take longer."],
+    ["-c:a aac -b:a 128k", "Encode audio as AAC at 128 kbps, fine for most content."]
+  ],
+  warn: [W_REENC, W_OVERWRITE]
+},
+{
+  id: "to-mp4", cat: 0,
+  title: "Convert anything to MP4",
+  kw: "avi mov mkv wmv flv change format",
+  desc: "Convert any input (AVI, MOV, MKV, WMV, and so on) to a widely compatible MP4 with H.264 video and AAC audio.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.avi" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.avi>")} -c:v libx264 -crf 23 -preset medium -c:a aac -b:a 128k ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-c:v libx264", "H.264 video, plays basically everywhere."],
+    ["-crf 23", "Balanced quality default. Lower for better quality, higher for smaller files."],
+    ["-c:a aac -b:a 128k", "AAC audio, the standard pairing for MP4."]
+  ],
+  warn: [W_REENC],
+  note: "If the source is already H.264 and AAC and you only need a different container, skip the re-encode entirely:\nffmpeg -i input.mkv -c copy output.mp4"
+},
+{
+  id: "to-webm", cat: 0,
+  title: "Convert to WebM (VP9)",
+  kw: "webm vp9 web browser opus",
+  desc: "Convert to WebM with VP9 video and Opus audio. Smaller than H.264 at similar quality, well supported in browsers, but encoding is slow.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.webm" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -c:v libvpx-vp9 -crf 32 -b:v 0 -row-mt 1 -c:a libopus -b:a 96k ${val(s,"out","<output.webm>")}`,
+  flags: [
+    ["-c:v libvpx-vp9", "The VP9 encoder."],
+    ["-crf 32 -b:v 0", "VP9 uses a different CRF scale (0 to 63). 30 to 35 is a reasonable range; -b:v 0 tells the encoder to use pure quality mode instead of a bitrate cap."],
+    ["-row-mt 1", "Row-based multithreading, a big speedup on multicore machines."],
+    ["-c:a libopus -b:a 96k", "Opus audio, excellent quality at low bitrates."]
+  ],
+  warn: ["VP9 encoding is much slower than H.264. Expect several times the encode time.", W_REENC]
+},
+{
+  id: "to-mkv", cat: 0,
+  title: "Change container to MKV (no re-encode)",
+  kw: "remux container matroska lossless instant",
+  desc: "Copy the existing video and audio streams into an MKV container. No re-encoding, so it is nearly instant and loses zero quality.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mkv" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -c copy ${val(s,"out","<output.mkv>")}`,
+  flags: [
+    ["-c copy", "Copy every stream as-is instead of re-encoding. Fast and lossless."]
+  ],
+  note: "MKV accepts almost any codec, so this nearly always works. Going the other way (into MP4) only works when the codecs are MP4-compatible (H.264, H.265, AAC, and a few others)."
+},
+{
+  id: "resize", cat: 0,
+  title: "Change resolution (keep aspect ratio)",
+  kw: "scale resize 1080p 720p downscale width height",
+  desc: "Scale the video to a target width and let ffmpeg compute the height so the aspect ratio is preserved.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "w", label: "Target width (px)", type: "number", def: 1280 },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "scale=${num(s,"w",1280)}:-2" -c:v libx264 -crf 20 -preset medium -c:a copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-vf \"scale=W:-2\"", "Video filter that scales to width W. The -2 means: compute the height from the aspect ratio, rounded to an even number (encoders require even dimensions)."],
+    ["-c:v libx264 -crf 20", "Scaling forces a video re-encode; CRF 20 keeps quality high."],
+    ["-c:a copy", "Audio is untouched, it is copied as-is."]
+  ],
+  warn: [W_REENC],
+  note: "To target a height instead, flip it: scale=-2:720. Upscaling never adds real detail, it only makes the file bigger."
+},
+{
+  id: "fps", cat: 0,
+  title: "Change the framerate",
+  kw: "fps frames per second 30 60 24",
+  desc: "Resample the video to a fixed framerate. Useful for standardizing footage or cutting file size on screen recordings.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "fps", label: "Target FPS", type: "number", def: 30 },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "fps=${num(s,"fps",30)}" -c:v libx264 -crf 20 -preset medium -c:a copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-vf \"fps=N\"", "The fps filter drops or duplicates frames to hit exactly N frames per second."],
+    ["-c:a copy", "Audio timing is unaffected by the video framerate, so it is copied."]
+  ],
+  warn: ["Lowering the framerate makes motion look choppier. Raising it duplicates frames, it does not create new ones.", W_REENC]
+},
+{
+  id: "faststart", cat: 0,
+  title: "Prepare MP4 for web streaming (faststart)",
+  kw: "web streaming faststart moov progressive browser instant play",
+  desc: "Move the MP4 index (the moov atom) to the front of the file so browsers can start playing before the whole file downloads. If your file is already H.264/AAC this is a fast, lossless remux.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -c copy -movflags +faststart ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-c copy", "No re-encoding, the streams are copied as-is."],
+    ["-movflags +faststart", "After writing, ffmpeg relocates the moov atom (the index) to the start of the file, which is what lets playback begin immediately over HTTP."]
+  ],
+  note: "If the source is not already H.264/AAC, convert and flag in one go:\nffmpeg -i input.mov -c:v libx264 -crf 23 -c:a aac -b:a 128k -movflags +faststart output.mp4"
+},
+// ---------- Audio ----------
+{
+  id: "extract-mp3", cat: 1,
+  title: "Extract audio to MP3",
+  kw: "rip audio mp3 music soundtrack",
+  desc: "Pull the audio track out of a video and save it as an MP3.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp3" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vn -c:a libmp3lame -q:a 2 ${val(s,"out","<output.mp3>")}`,
+  flags: [
+    ["-vn", "Drop the video stream entirely (video none)."],
+    ["-c:a libmp3lame", "Encode with the LAME MP3 encoder."],
+    ["-q:a 2", "Variable bitrate quality level 2, roughly 190 kbps. 0 is best, 9 is smallest."]
+  ],
+  warn: ["MP3 is lossy, so this re-encodes the audio. If you want a bit-perfect copy of the original track, use the AAC extraction task instead."]
+},
+{
+  id: "extract-aac", cat: 1,
+  title: "Extract audio without re-encoding (AAC/M4A)",
+  kw: "rip audio aac m4a lossless copy original",
+  desc: "Copy the original audio stream out of a video with zero quality loss. Works when the source audio is AAC, which is true for most MP4s.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.m4a" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vn -c:a copy ${val(s,"out","<output.m4a>")}`,
+  flags: [
+    ["-vn", "Drop the video stream."],
+    ["-c:a copy", "Copy the audio bytes exactly as they are, no re-encode, no quality loss, nearly instant."]
+  ],
+  warn: ["This only works if the container accepts the source codec. AAC into .m4a is the common case. If ffmpeg complains, re-encode instead: -c:a aac -b:a 192k"]
+},
+{
+  id: "remove-audio", cat: 1,
+  title: "Remove the audio track",
+  kw: "mute strip silence delete audio",
+  desc: "Produce a silent copy of the video. The video stream is copied untouched, so this is fast and lossless.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -an -c:v copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-an", "Drop all audio (audio none)."],
+    ["-c:v copy", "Copy the video stream without re-encoding."]
+  ]
+},
+{
+  id: "replace-audio", cat: 1,
+  title: "Replace the audio track",
+  kw: "swap dub music soundtrack new audio",
+  desc: "Take the video from one file and the audio from another, and combine them. The video is copied, the new audio is encoded to AAC.",
+  fields: [
+    { key: "in", label: "Video file", type: "text", ph: "input.mp4" },
+    { key: "audio", label: "New audio file", type: "text", ph: "audio.mp3" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -i ${val(s,"audio","<audio.mp3>")} -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -shortest ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-i (twice)", "Two inputs: input 0 is the video, input 1 is the new audio."],
+    ["-map 0:v:0", "Take the first video stream from input 0."],
+    ["-map 1:a:0", "Take the first audio stream from input 1."],
+    ["-c:v copy", "Video is untouched."],
+    ["-c:a aac -b:a 192k", "Encode the new audio as AAC so it fits in MP4."],
+    ["-shortest", "Stop at whichever stream ends first, so a long song does not leave a frozen frame at the end."]
+  ]
+},
+{
+  id: "volume", cat: 1,
+  title: "Change the volume",
+  kw: "louder quieter gain boost amplify db",
+  desc: "Multiply the audio volume. 1.5 means 50 percent louder, 0.5 means half volume. Video is copied untouched.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "vol", label: "Volume multiplier", type: "number", def: 1.5, step: 0.1 },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -filter:a "volume=${num(s,"vol",1.5)}" -c:v copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-filter:a \"volume=X\"", "Audio filter that multiplies the amplitude by X. You can also use decibels: volume=5dB."],
+    ["-c:v copy", "Video is copied; only the audio is re-encoded."]
+  ],
+  warn: ["Boosting past what the source headroom allows will clip and distort. If you hear crackling, lower the multiplier or normalize loudness instead."]
+},
+{
+  id: "audio-convert", cat: 1,
+  title: "Convert between audio formats",
+  kw: "wav mp3 flac ogg m4a aac audio transcode",
+  desc: "Convert an audio file from one format to another. The output extension tells ffmpeg which container to write.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.wav" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp3" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.wav>")} -c:a libmp3lame -b:a 192k ${val(s,"out","<output.mp3>")}`,
+  flags: [
+    ["-c:a libmp3lame", "The MP3 encoder. Swap per target: aac for .m4a, flac for .flac, libopus for .opus, libvorbis for .ogg."],
+    ["-b:a 192k", "Constant bitrate 192 kbps. For MP3 you can use VBR instead: -q:a 2."]
+  ],
+  note: "Lossy to lossy conversion (like MP3 to AAC) stacks generation loss. Convert from the original lossless source when you can."
+},
+{
+  id: "loudnorm", cat: 1,
+  title: "Normalize loudness",
+  kw: "normalize loudness lufs ebu podcast level",
+  desc: "Bring the audio to a standard perceived loudness (here -14 LUFS, a common streaming target). Video is copied.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -filter:a "loudnorm=I=-14:TP=-1.5:LRA=11" -c:v copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["loudnorm", "The EBU R128 loudness normalization filter."],
+    ["I=-14", "Target integrated loudness in LUFS. -14 suits streaming platforms; -16 is a common podcast target."],
+    ["TP=-1.5", "True peak ceiling in dB, keeps the limiter from clipping."],
+    ["LRA=11", "Target loudness range."]
+  ],
+  note: "This single-pass form adjusts dynamically as it goes. For the most accurate result, loudnorm supports a two-pass mode: run once with print_format=json to measure, then feed the measured values back in a second pass."
+},
+// ---------- Trim and cut ----------
+{
+  id: "trim-copy", cat: 2,
+  title: "Trim without re-encoding (fast)",
+  kw: "cut clip section extract part copy keyframe",
+  desc: "Cut a section out of a video without re-encoding. Nearly instant and lossless, with one honest catch: cuts can only land on keyframes, so the actual start may be up to a few seconds off from what you asked for.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "start", label: "Start (HH:MM:SS)", type: "text", ph: "00:00:10", def: "00:00:10" },
+    { key: "end", label: "End (HH:MM:SS)", type: "text", ph: "00:00:30", def: "00:00:30" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => {
+    const st = parseTime(s.start) ; const en = parseTime(s.end);
+    const startStr = (s.start || "").trim() || "<start>";
+    let durStr = "<duration>";
+    if (st !== null && en !== null && en > st) durStr = fmtTime(en - st);
+    return `ffmpeg -ss ${startStr} -i ${val(s,"in","<input.mp4>")} -to ${durStr} -c copy ${val(s,"out","<output.mp4>")}`;
+  },
+  flags: [
+    ["-ss (before -i)", "Seek the input before reading it. This is the fast path: ffmpeg jumps straight to the nearest keyframe at or before your start time instead of decoding everything up to it."],
+    ["-to (after input seek)", "Because -ss came before -i, timestamps restart at zero, so -to here effectively means \"clip length\". The tool computes it for you from your start and end times."],
+    ["-c copy", "Copy the streams, no re-encoding, no quality loss."]
+  ],
+  warn: [
+    "Keyframe snapping: with -c copy the cut can only begin at a keyframe. Your clip may start up to a few seconds earlier than requested, and some players show a brief freeze or garbage at the start. If you need frame-exact cuts, use the \"Trim with re-encoding\" task.",
+    W_OVERWRITE
+  ]
+},
+{
+  id: "trim-exact", cat: 2,
+  title: "Trim with re-encoding (exact)",
+  kw: "cut clip precise frame accurate exact section",
+  desc: "Cut a section with frame accuracy by re-encoding. Slower than a stream copy, but the clip starts and ends exactly where you asked.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "start", label: "Start (HH:MM:SS)", type: "text", ph: "00:00:10", def: "00:00:10" },
+    { key: "end", label: "End (HH:MM:SS)", type: "text", ph: "00:00:30", def: "00:00:30" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -ss ${(s.start||"").trim()||"<start>"} -to ${(s.end||"").trim()||"<end>"} -c:v libx264 -crf 20 -preset medium -c:a aac -b:a 128k ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-ss (after -i)", "Seek on the output side: ffmpeg decodes from the beginning and discards frames until the start time, which is what makes the cut frame-exact."],
+    ["-to", "Stop at this absolute timestamp of the input."],
+    ["-c:v libx264 -crf 20", "Re-encode the video at high quality."],
+    ["-c:a aac -b:a 128k", "Re-encode the audio to match."]
+  ],
+  warn: [W_REENC, "Decoding from the start makes this slow on long files. For a rough fast cut, use the stream-copy trim task instead."]
+},
+{
+  id: "concat-demux", cat: 2,
+  title: "Concatenate videos (same codec, no re-encode)",
+  kw: "join merge combine append concat demuxer parts",
+  desc: "Join clips that share the same codec, resolution, and framerate (for example, parts recorded by the same camera). Uses the concat demuxer with stream copy, so it is fast and lossless.",
+  fields: [
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `# 1. Create a text file listing the clips, in order (files.txt):
+file 'part1.mp4'
+file 'part2.mp4'
+file 'part3.mp4'
+
+# 2. Join them:
+ffmpeg -f concat -safe 0 -i files.txt -c copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-f concat", "Use the concat demuxer, which reads a list file and plays the entries back to back."],
+    ["-safe 0", "Allow absolute and relative paths in the list file (without it, ffmpeg rejects many path forms)."],
+    ["-i files.txt", "The list file. Each line is: file 'name.mp4' (quotes matter if the name has spaces)."],
+    ["-c copy", "No re-encoding, so all clips must share codec, resolution, framerate, and similar encoding parameters."]
+  ],
+  warn: ["If the clips differ in codec or resolution, the output will glitch or fail. In that case use the concat filter task, which re-encodes."]
+},
+{
+  id: "concat-filter", cat: 2,
+  title: "Concatenate videos (different codecs, re-encode)",
+  kw: "join merge combine mixed formats concat filter",
+  desc: "Join clips that do not share a codec or parameters. The concat filter decodes everything and re-encodes one uniform output.",
+  fields: [
+    { key: "a", label: "First clip", type: "text", ph: "a.mp4" },
+    { key: "b", label: "Second clip", type: "text", ph: "b.mov" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"a","<a.mp4>")} -i ${val(s,"b","<b.mov>")} -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]" -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset medium -c:a aac -b:a 128k ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-filter_complex", "A filter graph with multiple inputs. [0:v][0:a][1:v][1:a] feeds video and audio of both inputs into the concat filter."],
+    ["concat=n=2:v=1:a=1", "Join n=2 segments, producing 1 video and 1 audio stream. For three clips: n=3 and add [2:v][2:a]."],
+    ["-map \"[v]\" -map \"[a]\"", "Select the filter outputs as the streams to write."],
+    ["-c:v libx264 -crf 20", "Everything is re-encoded to one uniform format."]
+  ],
+  warn: ["Clips should have the same resolution and framerate before concat; if not, add a scale/fps step per input (for example [0:v]scale=1280:-2,fps=30[v0]) or the filter errors out.", W_REENC]
+},
+// ---------- GIF and images ----------
+{
+  id: "gif", cat: 3,
+  title: "Video to GIF (palette, good quality)",
+  kw: "gif animated palette convert meme",
+  desc: "Convert a clip to a GIF using a generated color palette. GIFs are limited to 256 colors; generating a palette from your actual footage is the difference between a clean GIF and a grainy one.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "fps", label: "GIF framerate", type: "number", def: 12 },
+    { key: "w", label: "GIF width (px)", type: "number", def: 480 },
+    { key: "out", label: "Output file", type: "text", ph: "output.gif" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -filter_complex "fps=${num(s,"fps",12)},scale=${num(s,"w",480)}:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse" -loop 0 ${val(s,"out","<output.gif>")}`,
+  flags: [
+    ["fps=12", "GIFs do not need full framerate; 10 to 15 keeps them smooth and small."],
+    ["scale=480:-1:flags=lanczos", "Resize to 480 wide (height keeps aspect), with the high-quality lanczos scaler."],
+    ["split[a][b]; palettegen; paletteuse", "The palette trick in one command: split the frames into two copies, use one to generate an optimal 256-color palette, then apply that palette to the other. This is the same idea as the classic two-pass approach, done in a single run."],
+    ["-loop 0", "Loop the GIF forever (1 would play it twice, -1 not at all)."]
+  ],
+  warn: ["GIFs are enormous compared to video. A few seconds at 480px can be several megabytes. If the target supports video, an MP4 or WebM is far smaller."],
+  note: "The classic explicit two-pass version does the same thing with an intermediate palette file:\nffmpeg -i input.mp4 -vf \"fps=12,scale=480:-1:flags=lanczos,palettegen\" palette.png\nffmpeg -i input.mp4 -i palette.png -filter_complex \"fps=12,scale=480:-1:flags=lanczos[x];[x][1:v]paletteuse\" output.gif"
+},
+{
+  id: "gif2mp4", cat: 3,
+  title: "GIF to MP4",
+  kw: "gif convert video mp4 smaller",
+  desc: "Convert a GIF to an MP4, usually shrinking it dramatically. The scale expression fixes GIFs with odd dimensions, which H.264 cannot encode.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.gif" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.gif>")} -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -pix_fmt yuv420p -movflags +faststart ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["scale=trunc(iw/2)*2:trunc(ih/2)*2", "Round both dimensions down to even numbers, required by the encoder."],
+    ["-pix_fmt yuv420p", "The pixel format that every player and browser accepts."],
+    ["-movflags +faststart", "Make the MP4 start playing instantly on the web."]
+  ]
+},
+{
+  id: "frame-png", cat: 3,
+  title: "Extract one frame as PNG",
+  kw: "screenshot still frame thumbnail snapshot image",
+  desc: "Grab a single frame at a given timestamp and save it as a PNG.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "t", label: "Timestamp (HH:MM:SS)", type: "text", ph: "00:00:05", def: "00:00:05" },
+    { key: "out", label: "Output file", type: "text", ph: "frame.png" }
+  ],
+  cmd: (s) => `ffmpeg -ss ${(s.t||"").trim()||"<time>"} -i ${val(s,"in","<input.mp4>")} -frames:v 1 ${val(s,"out","<frame.png>")}`,
+  flags: [
+    ["-ss (before -i)", "Fast seek to the timestamp. Because we decode from here anyway, the frame you get is accurate."],
+    ["-frames:v 1", "Write exactly one video frame, then stop."]
+  ]
+},
+{
+  id: "frames-fps", cat: 3,
+  title: "Extract frames at N per second",
+  kw: "frames sequence images export every second",
+  desc: "Export a numbered image sequence, N frames for every second of video.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "fps", label: "Frames per second", type: "number", def: 1 }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "fps=${num(s,"fps",1)}" frame_%04d.png`,
+  flags: [
+    ["-vf \"fps=1\"", "Sample one frame per second of video. Use 0.1 for one frame every 10 seconds, or 25 for near-full extraction."],
+    ["frame_%04d.png", "Output pattern: %04d becomes 0001, 0002, and so on."]
+  ],
+  warn: ["High fps values on long videos produce thousands of files fast. Do the math before you run it."]
+},
+{
+  id: "slideshow", cat: 3,
+  title: "Images to video slideshow",
+  kw: "slideshow photos pictures sequence images to video",
+  desc: "Turn a numbered image sequence (img001.jpg, img002.jpg, ...) into a video, each image shown for a fixed number of seconds.",
+  fields: [
+    { key: "sec", label: "Seconds per image", type: "number", def: 3 },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -framerate 1/${num(s,"sec",3)} -i img%03d.jpg -c:v libx264 -r 30 -pix_fmt yuv420p ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-framerate 1/3", "Input framerate of one frame every 3 seconds, which is what \"each image lasts 3 seconds\" means to ffmpeg."],
+    ["-i img%03d.jpg", "Input pattern: img001.jpg, img002.jpg, ... The numbering must be sequential with no gaps."],
+    ["-r 30", "Encode the output at 30 fps so it plays smoothly everywhere."],
+    ["-pix_fmt yuv420p", "Maximum player compatibility."]
+  ],
+  note: "On macOS and Linux you can use a glob instead of numbering: -pattern_type glob -i '*.jpg' (the glob pattern is not supported on Windows builds)."
+},
+{
+  id: "sprite", cat: 3,
+  title: "Thumbnail sprite sheet",
+  kw: "sprite tile preview grid contact sheet scrub",
+  desc: "Build a single image containing a 5 by 5 grid of thumbnails sampled through the video, the kind used for player scrub previews.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "iv", label: "Seconds between thumbs", type: "number", def: 10 },
+    { key: "out", label: "Output file", type: "text", ph: "sprite.png" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "fps=1/${num(s,"iv",10)},scale=160:-1,tile=5x5" -frames:v 1 ${val(s,"out","<sprite.png>")}`,
+  flags: [
+    ["fps=1/10", "Sample one frame every 10 seconds."],
+    ["scale=160:-1", "Shrink each thumbnail to 160 px wide."],
+    ["tile=5x5", "Arrange 25 thumbnails into one 5 by 5 grid image."],
+    ["-frames:v 1", "Write only the first completed sheet."]
+  ],
+  note: "5x5 at one thumb per 10 seconds covers 250 seconds of video. Scale the interval to your duration, or increase the grid (tile=10x10)."
+},
+// ---------- Subtitles ----------
+{
+  id: "burn-subs", cat: 4,
+  title: "Burn subtitles into the video",
+  kw: "hardcode hardsub burn srt captions permanent",
+  desc: "Render subtitles permanently into the picture (hardsubs). They cannot be turned off afterward, which is exactly what you want for platforms that ignore subtitle tracks.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "subs", label: "Subtitle file", type: "text", ph: "subs.srt" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "subtitles=${(s.subs||"").trim()||"<subs.srt>"}" -c:a copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-vf \"subtitles=file\"", "The subtitles filter draws the .srt or .ass file onto every frame, which forces a video re-encode."],
+    ["-c:a copy", "Audio is untouched."]
+  ],
+  warn: [
+    W_REENC,
+    "Path quirk: the subtitles filter parses its argument specially, so Windows paths with drive letters need escaping (subtitles='C\\:/clips/subs.srt'). Easiest fix: run the command from the folder containing the subtitle file and use a bare filename."
+  ]
+},
+{
+  id: "soft-subs", cat: 4,
+  title: "Add a soft subtitle track",
+  kw: "softsub embed mux subtitle track toggle srt",
+  desc: "Embed subtitles as a separate track the viewer can toggle on and off. Everything is stream-copied, so it is fast and lossless.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "subs", label: "Subtitle file", type: "text", ph: "subs.srt" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -i ${val(s,"subs","<subs.srt>")} -c copy -c:s mov_text ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-i (twice)", "The video and the subtitle file as separate inputs."],
+    ["-c copy", "Video and audio are copied as-is."],
+    ["-c:s mov_text", "Convert the subtitles to mov_text, the only text subtitle format MP4 supports. For MKV output use -c:s srt instead."]
+  ],
+  note: "Some players (and most social platforms) ignore soft subtitle tracks. If the subtitles must always be visible, burn them in instead."
+},
+{
+  id: "extract-subs", cat: 4,
+  title: "Extract subtitles from a video",
+  kw: "rip export srt subtitle track extract captions",
+  desc: "Pull an embedded text subtitle track out to a standalone .srt file.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mkv" },
+    { key: "out", label: "Output file", type: "text", ph: "subs.srt" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mkv>")} -map 0:s:0 ${val(s,"out","<subs.srt>")}`,
+  flags: [
+    ["-map 0:s:0", "Select the first subtitle stream of the first input. For the second track use 0:s:1, and so on. List all tracks first with ffprobe."]
+  ],
+  warn: ["This works for text-based subtitles (SRT, ASS, mov_text). Image-based formats (PGS from Blu-rays, VobSub from DVDs) are bitmaps and cannot be converted to text without OCR."]
+},
+// ---------- Info and misc ----------
+{
+  id: "probe", cat: 5,
+  title: "Get media info (ffprobe)",
+  kw: "info codec duration bitrate resolution streams inspect metadata",
+  desc: "Inspect a file: container, duration, codecs, resolution, framerate, bitrates, and every stream it contains. ffprobe ships with ffmpeg.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" }
+  ],
+  cmd: (s) => `ffprobe -hide_banner -v error -show_format -show_streams ${val(s,"in","<input.mp4>")}`,
+  flags: [
+    ["ffprobe", "The inspection tool bundled with ffmpeg. It never modifies the file."],
+    ["-hide_banner -v error", "Suppress the build banner and noise, show only the data and real errors."],
+    ["-show_format", "Container-level info: duration, size, overall bitrate."],
+    ["-show_streams", "Per-stream details: codec, resolution, framerate, channels."]
+  ],
+  note: "For machine-readable output add: -print_format json"
+},
+{
+  id: "rotate", cat: 5,
+  title: "Rotate a video",
+  kw: "rotate 90 180 sideways portrait landscape flip transpose",
+  desc: "Physically rotate the pixels. Pick a direction and the filter updates.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "dir", label: "Direction", type: "select", def: "1", options: [["1", "90 degrees clockwise"], ["2", "90 degrees counterclockwise"], ["180", "180 degrees"]] },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => {
+    const d = s.dir || "1";
+    const f = d === "180" ? "hflip,vflip" : "transpose=" + d;
+    return `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "${f}" -c:v libx264 -crf 20 -preset medium -c:a copy ${val(s,"out","<output.mp4>")}`;
+  },
+  flags: [
+    ["transpose=1", "Rotate 90 degrees clockwise. transpose=2 is counterclockwise."],
+    ["hflip,vflip", "Flipping both axes equals a 180 degree rotation."],
+    ["-c:a copy", "Audio is untouched."]
+  ],
+  warn: [W_REENC],
+  note: "Phones often record sideways and just set a rotation flag. If your video only *displays* wrong, you may be able to fix the metadata alone, losslessly (-display_rotation is an input option, so it goes before -i):\nffmpeg -display_rotation 90 -i input.mp4 -c copy output.mp4"
+},
+{
+  id: "crop", cat: 5,
+  title: "Crop a video",
+  kw: "crop cut edges region area trim borders",
+  desc: "Keep a rectangular region and discard the rest. Width and height set the size of the kept region; x and y set where its top-left corner sits in the source frame.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "w", label: "Width", type: "number", def: 1280 },
+    { key: "h", label: "Height", type: "number", def: 720 },
+    { key: "x", label: "X offset", type: "number", def: 0 },
+    { key: "y", label: "Y offset", type: "number", def: 0 },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -vf "crop=${num(s,"w",1280)}:${num(s,"h",720)}:${num(s,"x",0)}:${num(s,"y",0)}" -c:v libx264 -crf 20 -preset medium -c:a copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["crop=w:h:x:y", "Keep a w by h rectangle whose top-left corner is at (x, y). Expressions work too: crop=iw:ih-100 removes 100 px from the bottom (iw and ih are the input width and height)."],
+    ["-c:a copy", "Audio is untouched."]
+  ],
+  warn: [W_REENC],
+  note: "Not sure where to crop? Run ffprobe first to get the source resolution, or preview with ffplay:\nffplay -vf \"crop=1280:720:0:0\" input.mp4"
+},
+{
+  id: "speed", cat: 5,
+  title: "Speed up or slow down",
+  kw: "fast slow motion timelapse 2x speed change tempo",
+  desc: "Change playback speed for both video and audio. 2 means twice as fast, 0.5 means half speed. The audio filter chain is computed automatically for extreme values.",
+  fields: [
+    { key: "s", label: "Speed multiplier", type: "number", def: 2, step: 0.25 },
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (st) => {
+    const sp = Math.max(0.05, num(st, "s", 2));
+    const ptsFactor = parseFloat((1 / sp).toFixed(6));
+    return `ffmpeg -i ${val(st,"in","<input.mp4>")} -vf "setpts=${ptsFactor}*PTS" -filter:a "${atempoChain(sp)}" ${val(st,"out","<output.mp4>")}`;
+  },
+  flags: [
+    ["setpts=0.5*PTS", "Rewrite video timestamps. Multiplying by 0.5 halves each frame's timestamp, which plays the video twice as fast. For half speed the factor is 2."],
+    ["atempo=2", "Speed up audio without chipmunking the pitch. Each atempo instance accepts 0.5 to 100 on recent ffmpeg; for very slow speeds the tool chains instances (for example atempo=0.5,atempo=0.5 for quarter speed)."]
+  ],
+  warn: ["Slowing video down does not create new frames, so heavy slow motion looks stuttery unless you add frame interpolation (minterpolate), which is slow and out of scope here.", W_REENC]
+},
+{
+  id: "watermark", cat: 5,
+  title: "Add a watermark or logo overlay",
+  kw: "watermark logo overlay png brand corner",
+  desc: "Overlay an image (usually a transparent PNG) on the video, anchored to a corner with a 10 px margin.",
+  fields: [
+    { key: "in", label: "Input file", type: "text", ph: "input.mp4" },
+    { key: "logo", label: "Logo image", type: "text", ph: "logo.png" },
+    { key: "pos", label: "Corner", type: "select", def: "W-w-10:H-h-10", options: [["10:10", "Top left"], ["W-w-10:10", "Top right"], ["10:H-h-10", "Bottom left"], ["W-w-10:H-h-10", "Bottom right"]] },
+    { key: "out", label: "Output file", type: "text", ph: "output.mp4" }
+  ],
+  cmd: (s) => `ffmpeg -i ${val(s,"in","<input.mp4>")} -i ${val(s,"logo","<logo.png>")} -filter_complex "overlay=${s.pos || "W-w-10:H-h-10"}" -c:v libx264 -crf 20 -preset medium -c:a copy ${val(s,"out","<output.mp4>")}`,
+  flags: [
+    ["-filter_complex \"overlay=x:y\"", "Place input 1 (the logo) on input 0 (the video) at position x:y. W and H are the video's dimensions, w and h are the logo's, so W-w-10:H-h-10 is the bottom-right corner with a 10 px margin."],
+    ["-c:a copy", "Audio is untouched."]
+  ],
+  warn: [W_REENC]
+}
+];
+
+// ---------- State ----------
+let activeCat = -1; // -1 = all
+let searchTerm = "";
+let activeTask = null;
+const fieldState = {}; // per task id: { key: value }
+
+// ---------- Render category chips ----------
+function renderChips() {
+  const el = $("chips");
+  el.innerHTML = "";
+  const all = document.createElement("button");
+  all.className = "chip";
+  all.type = "button";
+  all.textContent = "All";
+  all.setAttribute("aria-pressed", activeCat === -1 ? "true" : "false");
+  all.addEventListener("click", () => { activeCat = -1; renderChips(); renderList(); });
+  el.appendChild(all);
+  CATS.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.textContent = c;
+    b.setAttribute("aria-pressed", activeCat === i ? "true" : "false");
+    b.addEventListener("click", () => { activeCat = activeCat === i ? -1 : i; renderChips(); renderList(); });
+    el.appendChild(b);
+  });
+}
+
+// ---------- Render task list ----------
+function matches(t) {
+  if (activeCat !== -1 && t.cat !== activeCat) return false;
+  if (!searchTerm) return true;
+  const hay = (t.title + " " + t.kw + " " + CATS[t.cat]).toLowerCase();
+  return searchTerm.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
+}
+function renderList() {
+  const el = $("task-list");
+  el.innerHTML = "";
+  let any = false;
+  CATS.forEach((c, ci) => {
+    const tasks = TASKS.filter((t) => t.cat === ci && matches(t));
+    if (!tasks.length) return;
+    any = true;
+    const h = document.createElement("div");
+    h.className = "cat-head";
+    h.textContent = c;
+    el.appendChild(h);
+    tasks.forEach((t) => {
+      const b = document.createElement("button");
+      b.className = "task-btn";
+      b.type = "button";
+      b.textContent = t.title;
+      b.setAttribute("aria-pressed", activeTask === t.id ? "true" : "false");
+      b.addEventListener("click", () => { activeTask = t.id; renderList(); renderDetail(); });
+      el.appendChild(b);
+    });
+  });
+  if (!any) {
+    const d = document.createElement("div");
+    d.className = "no-match";
+    d.textContent = "No tasks match. Try a broader term.";
+    el.appendChild(d);
+  }
+}
+
+// ---------- Render detail ----------
+function renderDetail() {
+  const el = $("detail");
+  const t = TASKS.find((x) => x.id === activeTask);
+  if (!t) {
+    el.innerHTML = '<div class="empty-state">Select a task from the list, or search for what you want to do.</div>';
+    return;
+  }
+  if (!fieldState[t.id]) {
+    fieldState[t.id] = {};
+    (t.fields || []).forEach((f) => {
+      if (f.def !== undefined) fieldState[t.id][f.key] = String(f.def);
+    });
+  }
+  const state = fieldState[t.id];
+
+  el.innerHTML = "";
+  const h2 = document.createElement("h2");
+  h2.textContent = t.title;
+  el.appendChild(h2);
+
+  const desc = document.createElement("p");
+  desc.className = "desc";
+  desc.textContent = t.desc;
+  el.appendChild(desc);
+
+  // Fields
+  if (t.fields && t.fields.length) {
+    const fw = document.createElement("div");
+    fw.className = "fields";
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div");
+      wrap.className = "field";
+      const lab = document.createElement("label");
+      lab.textContent = f.label;
+      lab.setAttribute("for", "f-" + t.id + "-" + f.key);
+      wrap.appendChild(lab);
+      let input;
+      if (f.type === "select") {
+        input = document.createElement("select");
+        (f.options || []).forEach(([v, txt]) => {
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = txt;
+          if (String(state[f.key] ?? f.def) === v) o.selected = true;
+          input.appendChild(o);
+        });
+      } else if (f.type === "range") {
+        input = document.createElement("input");
+        input.type = "range";
+        input.min = f.min; input.max = f.max;
+        input.value = state[f.key] ?? f.def;
+        const valSpan = document.createElement("span");
+        valSpan.className = "range-val";
+        valSpan.textContent = "CRF " + input.value;
+        const descDiv = document.createElement("div");
+        descDiv.className = "range-desc";
+        descDiv.textContent = f.desc ? f.desc(parseInt(input.value, 10)) : "";
+        input.addEventListener("input", () => {
+          state[f.key] = input.value;
+          valSpan.textContent = "CRF " + input.value;
+          if (f.desc) descDiv.textContent = f.desc(parseInt(input.value, 10));
+          updateCmd(t, state);
+        });
+        input.id = "f-" + t.id + "-" + f.key;
+        wrap.appendChild(input);
+        wrap.appendChild(valSpan);
+        wrap.appendChild(descDiv);
+        fw.appendChild(wrap);
+        return;
+      } else {
+        input = document.createElement("input");
+        input.type = f.type === "number" ? "number" : "text";
+        if (f.step) input.step = f.step;
+        input.placeholder = f.ph || "";
+        input.value = state[f.key] ?? "";
+        input.spellcheck = false;
+      }
+      input.id = "f-" + t.id + "-" + f.key;
+      input.addEventListener("input", () => { state[f.key] = input.value; updateCmd(t, state); });
+      if (f.type === "select") input.addEventListener("change", () => { state[f.key] = input.value; updateCmd(t, state); });
+      wrap.appendChild(input);
+      fw.appendChild(wrap);
+    });
+    el.appendChild(fw);
+  }
+
+  // Command block
+  const ch = document.createElement("div");
+  ch.className = "cmd-head";
+  const ct = document.createElement("div");
+  ct.className = "cmd-title";
+  ct.textContent = "Command";
+  const cb = document.createElement("button");
+  cb.className = "copy-btn";
+  cb.type = "button";
+  cb.textContent = "Copy command";
+  cb.addEventListener("click", () => copyCmd(t, state, cb));
+  ch.appendChild(ct);
+  ch.appendChild(cb);
+  el.appendChild(ch);
+
+  const pre = document.createElement("pre");
+  pre.id = "cmd-pre";
+  pre.textContent = t.cmd(state);
+  el.appendChild(pre);
+
+  const hint = document.createElement("div");
+  hint.className = "ph-hint";
+  hint.textContent = "Anything in <angle brackets> is a placeholder. Fill in the inputs above and it is substituted for you.";
+  el.appendChild(hint);
+
+  // Flags
+  if (t.flags && t.flags.length) {
+    const ft = document.createElement("div");
+    ft.className = "flags-title";
+    ft.textContent = "What each flag does";
+    el.appendChild(ft);
+    const fl = document.createElement("div");
+    fl.className = "flags";
+    t.flags.forEach(([k, v]) => {
+      const row = document.createElement("div");
+      row.className = "flag-row";
+      const kk = document.createElement("div");
+      kk.className = "flag-key";
+      kk.textContent = k;
+      const vv = document.createElement("div");
+      vv.className = "flag-val";
+      vv.textContent = v;
+      row.appendChild(kk);
+      row.appendChild(vv);
+      fl.appendChild(row);
+    });
+    el.appendChild(fl);
+  }
+
+  // Warnings
+  (t.warn || []).forEach((w) => {
+    const d = document.createElement("div");
+    d.className = "warn-box";
+    d.textContent = w;
+    el.appendChild(d);
+  });
+
+  // Note
+  if (t.note) {
+    const d = document.createElement("div");
+    d.className = "note-box";
+    d.textContent = t.note;
+    el.appendChild(d);
+  }
+
+  const tip = document.createElement("div");
+  tip.className = "tip";
+  tip.textContent = "Tip: ffmpeg asks before overwriting an existing output file. Add -y right after ffmpeg to skip the prompt, but know that it silently replaces the file.";
+  el.appendChild(tip);
+}
+
+function updateCmd(t, state) {
+  const pre = $("cmd-pre");
+  if (pre) pre.textContent = t.cmd(state);
+}
+
+function copyCmd(t, state, btn) {
+  const text = t.cmd(state);
+  const done = () => {
+    const old = btn.textContent;
+    btn.textContent = "Copied";
+    setTimeout(() => { btn.textContent = old; }, 1400);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+  done();
+}
+
+// ---------- Search ----------
+$("search").addEventListener("input", (e) => {
+  searchTerm = e.target.value.trim();
+  renderList();
+});
+
+renderChips();
+renderList();
+</script>
+</body>
+</html>
