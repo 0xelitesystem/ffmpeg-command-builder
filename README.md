@@ -30,6 +30,10 @@ Every task is a small data object: a goal-phrased title, a description, optional
 
 Everything runs client-side in your browser. File names and values you type never leave the page. No analytics, no tracking, no network requests of any kind.
 
+## More
+
+Part of a catalog of single-file browser tools and plain-language references, all MIT licensed and dependency-free: [0xelitesystem.github.io](https://0xelitesystem.github.io/). Built by [elitesystem.ai](https://elitesystem.ai).
+
 ## License
 
 MIT. Copyright 0xelitesystem 2026.
