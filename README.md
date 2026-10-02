@@ -4,9 +4,18 @@ Task-first ffmpeg helper. Instead of digging through documentation, pick what yo
 
 One HTML file, no external dependencies, works offline.
 
-## Live demo
+**Live demo:** https://0xelitesystem.github.io/ffmpeg-command-builder/
 
-https://0xelitesystem.github.io/ffmpeg-command-builder/
+## Use
+
+1. Search for a goal or click a category filter (compress, audio, trim, GIF, subtitles, info).
+2. Pick a task to see its ffmpeg command.
+3. Fill in your file name, times, or quality slider; the command updates as you type.
+4. Read the flag explanations and warnings, then click copy and run the command in your terminal.
+
+## Why this exists
+
+ffmpeg can do almost anything, but the right flags are buried in long documentation. This tool turns everyday goals into the exact command with every flag explained. It is one HTML file with inline CSS and JavaScript: no account, no tracking, no analytics, no external scripts or fonts, and it works offline. MIT licensed, so you can fork it, self-host it, or read every line.
 
 ## Features
 
@@ -28,7 +37,20 @@ Every task is a small data object: a goal-phrased title, a description, optional
 
 ## Privacy
 
-Everything runs client-side in your browser. File names and values you type never leave the page. No analytics, no tracking, no network requests of any kind.
+Everything runs client-side in your browser. File names and values you type never leave the page. No analytics, no tracking, no network requests of any kind. The only thing written to storage is your light or dark theme choice, saved in localStorage under the key `theme`.
+
+## Run locally
+
+```bash
+git clone https://github.com/0xelitesystem/ffmpeg-command-builder
+cd ffmpeg-command-builder
+```
+
+Then open `index.html` in any modern browser. Or serve the folder with `python -m http.server 8000` and visit http://localhost:8000.
+
+## Build
+
+No build step. The whole tool is one `index.html` with no dependencies, so there is nothing to install or compile.
 
 ## More
 
